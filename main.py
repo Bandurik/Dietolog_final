@@ -4,16 +4,12 @@ from reminders import start_scheduler
 import datetime
 import threading
 import subprocess
+import logging
 from threading import Thread
-
-
 
 def start_check_payments():
     subprocess.Popen(['python', 'check_payments.py'])
     logging.info("Started check_payments.py process.")
-
-# Запуск check_payments.py в отдельном процессе
-    threading.Thread(target=start_check_payments, daemon=True).start()
 
 def main():
     updater = Updater("6891513570:AAGdb1fhPcg87GPpg7m-dAG8VTEWOlFfL3A", use_context=True)
@@ -34,11 +30,12 @@ def main():
     dp.add_handler(CallbackQueryHandler(main_menu, pattern='^start$'))
     dp.add_handler(conv_handler)
 
-    dp.add_handler(conv_handler)
-
-    # Запуск планировщика напоминаний в отдельном потоке
     scheduler_thread = threading.Thread(target=start_scheduler, daemon=True)
     scheduler_thread.start()
+
+    # Запуск check_payments.py в отдельном процессе
+    check_payments_thread = threading.Thread(target=start_check_payments, daemon=True)
+    check_payments_thread.start()
 
     try:
         updater.start_polling()
